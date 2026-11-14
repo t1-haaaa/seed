@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidSavedSeed(data) {
+      return data.userId is string &&
+             data.userId == request.auth.uid &&
+             data.userId.size() >= 1 &&
+             data.userId.size() <= 128 &&
+             data.seedValue is string &&
+             data.seedValue.size() >= 1 &&
+             data.seedValue.size() <= 100 &&
+             data.title is string &&
+             data.title.size() >= 1 &&
+             data.title.size() <= 120 &&
+             data.edition is string &&
+             data.edition in ['java', 'bedrock', 'both'] &&
+             data.minecraftVersion is string &&
+             data.minecraftVersion.size() >= 1 &&
+             data.minecraftVersion.size() <= 32 &&
+             data.spawnBiome is string &&
+             data.spawnBiome.size() <= 80 &&
+             data.spawnCoordinates is string &&
+             data.spawnCoordinates.size() <= 64 &&
+             data.summary is string &&
+             data.summary.size() <= 1000 &&
+             data.userWishPrompt is string &&
+             data.userWishPrompt.size() <= 500 &&
+             data.highlights is list &&
+             data.highlights.size() <= 10 &&
+             (data.highlights.size() == 0 || (data.highlights[0] is string && data.highlights[0].size() <= 80)) &&
+             data.isFavorite is bool &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/savedSeeds/{seedId} {
+      allow get: if isSignedIn() && isValidId(seedId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId;
+
+      allow create: if isSignedIn() &&
+                       isValidId(seedId) &&
+                       request.auth.uid == userId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'userId', 'seedValue', 'title', 'edition', 'minecraftVersion',
+                         'spawnBiome', 'spawnCoordinates', 'summary', 'userWishPrompt',
+                         'highlights', 'isFavorite', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'seedValue', 'title', 'edition', 'minecraftVersion',
+                         'spawnBiome', 'spawnCoordinates', 'summary', 'userWishPrompt',
+                         'highlights', 'isFavorite', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidSavedSeed(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(seedId) &&
+                       request.auth.uid == userId &&
+                       isValidSavedSeed(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'title', 'summary', 'highlights', 'isFavorite', 'updatedAt'
+                       ]);
+
+      allow delete: if isSignedIn() && isValidId(seedId) && request.auth.uid == userId;
+    }
+  }
+}

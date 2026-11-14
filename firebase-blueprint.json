@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "SavedSeed": {
+      "title": "SavedSeed",
+      "description": "A user's saved Minecraft world seed suggestion and metadata.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner UID matching request.auth.uid."
+        },
+        "seedValue": {
+          "type": "string",
+          "description": "Numeric or alphanumeric Minecraft world seed."
+        },
+        "title": {
+          "type": "string",
+          "description": "Descriptive title for the world seed."
+        },
+        "edition": {
+          "type": "string",
+          "enum": ["java", "bedrock", "both"],
+          "description": "Minecraft edition target."
+        },
+        "minecraftVersion": {
+          "type": "string",
+          "description": "Target Minecraft version such as 1.21.4."
+        },
+        "spawnBiome": {
+          "type": "string",
+          "description": "Primary biome near the spawn point."
+        },
+        "spawnCoordinates": {
+          "type": "string",
+          "description": "Recommended spawn or landmark coordinates."
+        },
+        "summary": {
+          "type": "string",
+          "description": "Detailed description of resources, terrain, and features."
+        },
+        "userWishPrompt": {
+          "type": "string",
+          "description": "Original user preferences used to suggest this seed."
+        },
+        "highlights": {
+          "type": "array",
+          "description": "Up to 10 key feature tags for this world."
+        },
+        "isFavorite": {
+          "type": "boolean",
+          "description": "Whether the seed is starred by the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when saved; clients submit FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated; clients submit FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "seedValue",
+        "title",
+        "edition",
+        "minecraftVersion",
+        "spawnBiome",
+        "spawnCoordinates",
+        "summary",
+        "userWishPrompt",
+        "highlights",
+        "isFavorite",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/savedSeeds/{seedId}": {
+      "schema": {
+        "$ref": "#/entities/SavedSeed"
+      },
+      "description": "User-scoped collection of saved Minecraft world seeds."
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "سيد كرافت",
+  "description": "مقترح سيدات عوالم ماين كرافت بلا حدود حسب رغباتك مع خريطة بيومات تفاعلية وحفظ البذور المفضلة سحابياً",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
